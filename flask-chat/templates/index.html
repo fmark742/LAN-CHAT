@@ -3,58 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Lan Chat Beta</title>
+    <title>Home</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="icon" href="{{ url_for('static', filename='assets/message_con.png') }}" type="image/x-icon">
-
 </head>
 <body>
     <div class="main">
-    <div class="container">
-       
-        <div class="chat-container">
-            <div id="aliasInputContainer">
-                <input type="text" id="aliasInput" placeholder="Enter your name alias...">
-                <button onclick="setAlias()">Set Alias</button>
+        <img src="/static/assets/main.png" alt="" id="facade">
+        <div class="container">
+            <div class="chat-container">
+                <div id="aliasInputContainer">
+                    <input type="text" id="aliasInput" placeholder="Enter your name alias...">
+                    <button onclick="setAlias()">Set Alias</button>
+                </div>
+                <ul id="messageList"></ul>
+                <div class="msgbox">
+                    <input type="text" id="messageInput" placeholder="Type your message..." disabled>
+                    <button onclick="sendMessage()" id="sendButton" disabled>Send</button>
+                    <form id="fileUploadForm" method="post" enctype="multipart/form-data" style="display: inline;">
+                        <input type="file" id="fileInput" name="file" style="display: none;" onchange="uploadFile()">
+                        <input type="hidden" id="aliasHiddenInput" name="alias">
+                        <button type="button" id="fileButton" onclick="document.getElementById('fileInput').click();" disabled>Choose File</button>
+                    </form>
+                </div>
             </div>
-
-            <ul id="messageList"></ul>
-            <div class="msgbox">
-            <input type="text" id="messageInput" placeholder="Type your message..." disabled>
-            <button onclick="sendMessage()" id="sendButton" disabled>Send</button>
-        </div>
         </div>
     </div>
-
-
-
-
-</div>
-
-    
-
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
     <script>
         var socket = io();
         var alias;
+        var savedMessages = [];
 
         function setAlias() {
             var aliasInput = document.getElementById('aliasInput');
             alias = aliasInput.value.trim();
-            
             if (alias !== '') {
                 document.getElementById('aliasInputContainer').style.display = 'none';
                 document.getElementById('messageInput').disabled = false;
                 document.getElementById('sendButton').disabled = false;
+                document.getElementById('fileButton').disabled = false;
+                document.getElementById('aliasHiddenInput').value = alias; // Set alias in hidden input
+                document.getElementById('messageList').innerHTML = ''; // Clear the initial prompt message
+                displaySavedMessages(); // Display messages once alias is set
             }
         }
 
-        socket.on('message', function(data) {
+        function displaySavedMessages() {
+            var messageList = document.getElementById('messageList');
+            savedMessages.forEach(message => {
+                var li = document.createElement('li');
+                if (message.includes('uploaded:')) {
+                    var parts = message.split(' ');
+                    var link = document.createElement('a');
+                    link.href = parts[parts.length - 1].replace('(', '').replace(')', '');
+                    link.textContent = parts[2];
+                    link.target = '_blank';
+                    li.textContent = parts.slice(0, 2).join(' ') + ' ';
+                    li.appendChild(link);
+                } else {
+                    li.textContent = message.trim();
+                }
+                messageList.appendChild(li);
+            });
+        }
+
+        socket.on('message', function (data) {
             var messageList = document.getElementById('messageList');
             var li = document.createElement('li');
             li.textContent = data.alias + ': ' + data.message;
+            messageList.appendChild(li);
+        });
+
+        socket.on('file_uploaded', function (data) {
+            var messageList = document.getElementById('messageList');
+            var li = document.createElement('li');
+            li.textContent = data.alias + ' uploaded: ';
+            var link = document.createElement('a');
+            link.href = data.url;
+            link.textContent = data.filename;
+            link.target = '_blank';
+            li.appendChild(link);
             messageList.appendChild(li);
         });
 
@@ -64,6 +94,39 @@
             socket.emit('message', { alias: alias, message: message });
             messageInput.value = '';
         }
+
+        function uploadFile() {
+            var form = document.getElementById('fileUploadForm');
+            var formData = new FormData(form);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/', true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    form.reset();
+                    document.getElementById('aliasHiddenInput').value = alias; // Reset alias in hidden input
+                } else {
+                    console.error('Upload failed');
+                }
+            };
+            xhr.send(formData);
+        }
+
+        // Fetch and store saved messages on page load
+        window.onload = function () {
+            fetch('/get_messages')
+                .then(response => response.json())
+                .then(messages => {
+                    savedMessages = messages;
+                    // Add initial prompt message
+                    var messageList = document.getElementById('messageList');
+                    var li = document.createElement('li');
+                    li.id = 'promptMessage';
+                    li.textContent = 'Set alias to start chatting';
+                    li.style = ' text-align: center';
+                    messageList.appendChild(li);
+                })
+                .catch(error => console.error('Error fetching messages:', error));
+        };
     </script>
 </body>
 </html>
