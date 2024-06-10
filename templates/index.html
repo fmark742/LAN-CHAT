@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,10 +9,12 @@
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="icon" href="{{ url_for('static', filename='assets/message_con.png') }}" type="image/x-icon">
 </head>
+
 <body>
     <div class="main">
         <img src="/static/assets/main.png" alt="" id="facade">
         <div class="container">
+            <button class="minimize-btn" onclick="toggleMinimize()">-</button>
             <div class="chat-container">
                 <div id="aliasInputContainer">
                     <input type="text" id="aliasInput" placeholder="Enter your name alias...">
@@ -24,7 +27,8 @@
                     <form id="fileUploadForm" method="post" enctype="multipart/form-data" style="display: inline;">
                         <input type="file" id="fileInput" name="file" style="display: none;" onchange="uploadFile()">
                         <input type="hidden" id="aliasHiddenInput" name="alias">
-                        <button type="button" id="fileButton" onclick="document.getElementById('fileInput').click();" disabled>Choose File</button>
+                        <button type="button" id="fileButton" onclick="document.getElementById('fileInput').click();"
+                            disabled>Choose File</button>
                     </form>
                 </div>
             </div>
@@ -111,6 +115,11 @@
             xhr.send(formData);
         }
 
+        function toggleMinimize() {
+            var container = document.querySelector('.container');
+            container.classList.toggle('minimized');
+        }
+
         // Fetch and store saved messages on page load
         window.onload = function () {
             fetch('/get_messages')
@@ -127,6 +136,12 @@
                 })
                 .catch(error => console.error('Error fetching messages:', error));
         };
+
+        function toggleMinimize() {
+            var container = document.querySelector('.container');
+            container.classList.toggle('minimized');
+        }
     </script>
 </body>
+
 </html>
