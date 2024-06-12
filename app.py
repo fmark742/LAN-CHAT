@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 
 UPLOAD_FOLDER = 'uploads'  # Ensure this path exists
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'py', 'html', 'java','ipynb','pdf','wordx  '}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'py', 'html', 'java', 'ipynb', 'pdf', 'docx', 'pptx'}
 MESSAGE_FILE = 'messages.txt'  # Path to the message file
 
 app = Flask(__name__)

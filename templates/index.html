@@ -6,13 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="icon" href="{{ url_for('static', filename='assets/message_con.ico') }}" type="image/x-icon">
 </head>
 
 <body>
     <div class="main">
-        <img src="/static/assets/main.png" alt="" id="facade">
+        <img src="{{ url_for('static', filename='assets/main.png') }}" alt="" id="facade">
         <div class="container">
             <button class="minimize-btn" onclick="toggleMinimize()">-</button>
             <div class="chat-container">
@@ -34,7 +33,7 @@
             </div>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/socket.io.js') }}"></script>
     <script>
         var socket = io();
         var alias;

@@ -1,0 +1,83 @@
+from tkinter import *
+import tkinter.messagebox as messagebox
+import csv
+from os import path
+
+# Opening window
+window = Tk()
+window.title('Advanced Problem 6')
+
+# Function to compute the midterm grade and save inputs to a CSV file
+def compute_and_save():
+    try:
+        last_name = last_name_var.get()
+        first_name = first_name_var.get()
+        quiz_avg = float(quiz_avg_var.get())
+        lab_avg = float(lab_avg_var.get())
+        mt_eq = float(mt_eq_var.get())
+        midterm = quiz_avg * 0.35 + lab_avg * 0.35 + mt_eq * 0.30
+        midterm_grade_var.set("{:.2f}".format(midterm))
+        
+        # Check for CSV file existence
+        file_exists = path.exists('advanced_prob6.csv')
+        with open('advanced_prob6.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                writer.writerow(['First Name', 'Last Name', 'Quiz Average', 'Lab Average', 'MT EQ'])
+            writer.writerow([first_name, last_name, quiz_avg, lab_avg, mt_eq])
+    except Exception as error:
+        messagebox.showerror('Error', error)
+
+# Function to clear the input fields
+def clear_fields():
+    last_name_var.set('')
+    first_name_var.set('')
+    quiz_avg_var.set('')
+    lab_avg_var.set('')
+    mt_eq_var.set('')
+    midterm_grade_var.set('')
+
+# Function to read and print the CSV file
+def view_records():
+    try:
+        with open('advanced_prob6.csv', 'r') as file:
+            reader = csv.reader(file)
+            next(reader)
+            print('#\tStudent Name\t\tQuiz avg 35%\tLab avg 35%\tMT eq 30%\tMidterm Grade')
+            index = 0
+            for row in reader:
+                if len(row) < 5:
+                    continue  # Skip rows that don't have enough columns
+                index += 1
+                first_name, last_name, quiz_avg, lab_avg, mt_eq = row[0], row[1], float(row[2]), float(row[3]), float(row[4])
+                midterm_grade = quiz_avg * 0.35 + lab_avg * 0.35 + mt_eq * 0.30
+                print(f"{index}.\t{first_name} {last_name}\t\t{quiz_avg:.2f}\t\t{lab_avg:.2f}\t\t{mt_eq:.2f}\t\t{midterm_grade:.2f}")
+    except Exception as error:
+        print("Error: ", error)
+
+# Variable declarations
+last_name_var = StringVar()
+first_name_var = StringVar()
+quiz_avg_var = StringVar()
+lab_avg_var = StringVar()
+mt_eq_var = StringVar()
+midterm_grade_var = StringVar()
+
+# Create GUI
+Label(window, text='Last Name').grid(row=0, column=0)
+Entry(window, textvariable=last_name_var, width=25, border=3).grid(row=0, column=1, columnspan=2)
+Label(window, text='First Name').grid(row=1, column=0)
+Entry(window, textvariable=first_name_var, width=25, border=3).grid(row=1, column=1, columnspan=2)
+Label(window, text='Quiz Average').grid(row=2, column=0)
+Entry(window, textvariable=quiz_avg_var, width=12, border=3).grid(row=2, column=1)
+Label(window, text='Lab Average').grid(row=3, column=0)
+Entry(window, textvariable=lab_avg_var, width=12, border=3).grid(row=3, column=1)
+Label(window, text='MT EQ').grid(row=4, column=0)
+Entry(window, textvariable=mt_eq_var, width=12, border=3).grid(row=4, column=1)
+Label(window, text='Midterm Grade').grid(row=5, column=0)
+Entry(window, textvariable=midterm_grade_var, width=12, border=3, state='disabled').grid(row=5, column=1)
+Button(window, text='Save', width=10, command=compute_and_save).grid(row=6, column=0)
+Button(window, text='Clear', width=10, command=clear_fields).grid(row=6, column=1)
+Button(window, text='View', width=10, command=view_records).grid(row=6, column=2)
+
+window.mainloop()
